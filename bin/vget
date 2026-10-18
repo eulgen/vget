@@ -1,0 +1,192 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# vget - Universal Media Hub CLI (VidMate for Terminal)
+# ==============================================================================
+set -euo pipefail
+IFS=$'\n\t'
+
+# Résolution propre du dossier des bibliothèques (mode local ou installé)
+resolve_lib_dir() {
+    local source="${BASH_SOURCE[0]}"
+    while [[ -h "$source" ]]; do
+        local dir
+        dir="$(cd -P "$(dirname "$source")" && pwd)"
+        source="$(readlink "$source")"
+        [[ $source != /* ]] && source="$dir/$source"
+    done
+    local base_dir
+    base_dir="$(cd -P "$(dirname "$source")/.." && pwd)"
+    if [[ -d "$base_dir/lib" ]]; then
+        echo "$base_dir/lib"
+    elif [[ -d "$HOME/.local/share/vget/lib" ]]; then
+        echo "$HOME/.local/share/vget/lib"
+    else
+        echo "/usr/local/share/vget/lib"
+    fi
+}
+
+LIB_DIR="$(resolve_lib_dir)"
+readonly LIB_DIR
+
+# Chargement des modules requis
+# shellcheck source=/dev/null
+source "$LIB_DIR/config.sh"
+# shellcheck source=/dev/null
+source "$LIB_DIR/ui.sh"
+# shellcheck source=/dev/null
+source "$LIB_DIR/deps.sh"
+
+# Nettoyage en cas d'interruption
+cleanup() {
+    local code=$?
+    tput cnorm 2>/dev/null || printf "\033[?25h"
+    exit "$code"
+}
+trap cleanup EXIT INT TERM
+
+show_help() {
+    print_banner
+    cat << "EOF"
+USAGE:
+  vget [OPTIONS] <URL|RECHERCHE>
+  vget                                 (Lance le mode interactif)
+
+MODES DE BASE:
+  -v, --video [QUALITÉ]   Télécharger la vidéo (1080p|720p|480p|360p|240p|144p|4k)
+  -a, --audio [FORMAT]    Extraire l'audio (défaut: mp3 | flac | m4a | wav)
+  -p, --play              Lire/streamer directement sans enregistrer
+  -s, --search <MOTS>     Rechercher sur YouTube / le Web
+  -i, --interactive       Forcer le menu guidé interactif
+
+OPTIONS AVANCÉES:
+  --trim <DÉBUT> <FIN>    Télécharger un extrait (ex: 01:20 02:45)
+  --sponsorblock          Supprimer automatiquement sponsors et intros
+  --sub [LANGUES]         Télécharger et incruster les sous-titres (ex: fr,en)
+  -b, --batch <FICHIER>   Télécharger une liste d'URLs depuis un fichier
+  -l, --limit-rate <V>    Limiter la bande passante (ex: 5M, 500K)
+  -o, --output <DOSSIER>  Dossier de destination personnalisé
+  --organize              Classer dans un dossier par chaîne / artiste
+  -F, --formats           Lister tous les formats disponibles
+  -n, --dry-run           Simuler sans télécharger de fichier
+
+SYSTÈME:
+  init, --init            Installer vget dans le PATH global (~/.local/bin)
+  --check-deps            Diagnostiquer les outils système requis
+  --update                Mettre à jour vget et yt-dlp
+  -h, --help              Afficher cette aide
+  -V, --version           Afficher la version
+EOF
+}
+
+# Variables d'état globales pour les arguments (exportées pour les modules dans lib/)
+export MODE="video"
+export TARGET_URL=""
+export QUALITY="${VGET_DEFAULT_VIDEO_QUALITY}"
+export AUDIO_FORMAT="${VGET_DEFAULT_AUDIO_FORMAT}"
+export OUTPUT_DIR=""
+export TRIM_START=""
+export TRIM_END=""
+export LIMIT_RATE=""
+export SUB_LANGS=""
+export SPONSORBLOCK="false"
+export ORGANIZE="false"
+export DRY_RUN="false"
+export BATCH_FILE=""
+export SEARCH_QUERY=""
+
+# Parsing des arguments CLI
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help) show_help; exit 0 ;;
+            -V|--version) echo "vget v$VGET_VERSION"; exit 0 ;;
+            init|--init) MODE="init"; shift ;;
+            --check-deps) show_deps_status; exit $? ;;
+            -i|--interactive) MODE="interactive"; shift ;;
+            -p|--play) MODE="play"; shift ;;
+            -s|--search) MODE="search"; SEARCH_QUERY="${2:-}"; shift 2 ;;
+            -v|--video)
+                MODE="video"
+                if [[ $# -gt 1 && ! "$2" =~ ^- ]]; then QUALITY="$2"; shift 2; else shift; fi ;;
+            -a|--audio)
+                MODE="audio"
+                if [[ $# -gt 1 && ! "$2" =~ ^- ]]; then AUDIO_FORMAT="$2"; shift 2; else shift; fi ;;
+            -F|--formats) MODE="formats"; shift ;;
+            -n|--dry-run|--simulate) DRY_RUN="true"; shift ;;
+            --sponsorblock) SPONSORBLOCK="true"; shift ;;
+            --organize) ORGANIZE="true"; shift ;;
+            --trim) TRIM_START="${2:-}"; TRIM_END="${3:-}"; shift 3 ;;
+            --sub)
+                if [[ $# -gt 1 && ! "$2" =~ ^- ]]; then SUB_LANGS="$2"; shift 2; else SUB_LANGS="all"; shift; fi ;;
+            -b|--batch) BATCH_FILE="${2:-}"; shift 2 ;;
+            -l|--limit-rate) LIMIT_RATE="${2:-}"; shift 2 ;;
+            -o|--output) OUTPUT_DIR="${2:-}"; shift 2 ;;
+            --update) MODE="update"; shift ;;
+            *)
+                if [[ -z "$TARGET_URL" && ! "$1" =~ ^- ]]; then
+                    TARGET_URL="$1"
+                    shift
+                else
+                    print_error "Argument inconnu ou inattendu: $1"
+                    show_help
+                    exit 1
+                fi
+                ;;
+        esac
+    done
+}
+
+main() {
+    parse_args "$@"
+
+    # Si aucun argument ou mode interactif explicite
+    if [[ $# -eq 0 || "$MODE" == "interactive" ]]; then
+        # shellcheck source=/dev/null
+        source "$LIB_DIR/interactive.sh"
+        start_interactive_mode
+        exit 0
+    fi
+
+    # Vérification des dépendances pour les modes opérationnels
+    if [[ "$MODE" != "update" && "$MODE" != "init" ]]; then
+        local check_mode="$MODE"
+        [[ "$DRY_RUN" == "true" ]] && check_mode="dry-run"
+        check_dependencies "$check_mode" || exit 1
+    fi
+
+    # Dispatch vers les modules correspondants
+    case "$MODE" in
+        init)
+            # shellcheck source=/dev/null
+            source "$LIB_DIR/installer.sh"
+            run_init
+            ;;
+        update)
+            # shellcheck source=/dev/null
+            source "$LIB_DIR/updater.sh"
+            run_updater
+            ;;
+        play)
+            # shellcheck source=/dev/null
+            source "$LIB_DIR/player.sh"
+            stream_media "$TARGET_URL"
+            ;;
+        search)
+            # shellcheck source=/dev/null
+            source "$LIB_DIR/search.sh"
+            search_and_select "$SEARCH_QUERY"
+            ;;
+        formats)
+            # shellcheck source=/dev/null
+            source "$LIB_DIR/downloader.sh"
+            list_media_formats "$TARGET_URL"
+            ;;
+        video|audio)
+            # shellcheck source=/dev/null
+            source "$LIB_DIR/downloader.sh"
+            execute_download
+            ;;
+    esac
+}
+
+main "$@"
