@@ -54,6 +54,7 @@ execute_download() {
 
     local -a cmd=("yt-dlp")
     cmd+=("--continue" "--retries" "5" "--fragment-retries" "10")
+    cmd+=("--concurrent-fragments" "${VGET_CONCURRENT_FRAGMENTS:-5}")
 
     # Mode Audio ou Vidéo
     if [[ "$MODE" == "audio" ]]; then

@@ -19,6 +19,7 @@ export VGET_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/vget"
 # Paramètres de qualité par défaut
 export VGET_DEFAULT_VIDEO_QUALITY="${VGET_DEFAULT_VIDEO_QUALITY:-1080p}"
 export VGET_DEFAULT_AUDIO_FORMAT="${VGET_DEFAULT_AUDIO_FORMAT:-mp3}"
+export VGET_CONCURRENT_FRAGMENTS="${VGET_CONCURRENT_FRAGMENTS:-5}"
 
 # Initialise les répertoires nécessaires
 init_vget_dirs() {
