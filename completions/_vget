@@ -1,0 +1,44 @@
+#compdef vget
+
+# ==============================================================================
+# vget - Zsh Completion Script
+# ==============================================================================
+
+_vget() {
+    local -a options=(
+        '(-v --video)'{-v,--video}'[Download video stream (quality)]:quality:(1080p 720p 480p 360p 4k best)'
+        '(-a --audio)'{-a,--audio}'[Extract standalone audio]:format:(mp3 flac m4a wav)'
+        '(-p --play)'{-p,--play}'[Stream media directly via mpv]'
+        '(-s --search)'{-s,--search}'[Search YouTube and media sources]:query:'
+        '(-c --clipboard)'{-c,--clipboard}'[Use URL from system clipboard]'
+        '--gif[Generate animated GIF clip (--trim)]'
+        '(-i --interactive)'{-i,--interactive}'[Launch interactive Telescope selector]'
+        '--fast[Parallel socket accelerator (aria2c 16 connections)]'
+        '--aria2[Alias for --fast]'
+        '--efficient[Prioritize high-efficiency codecs (AV1/VP9)]'
+        '--archive[Smart deduplication ledger]'
+        '(-l --limit-rate)'{-l,--limit-rate}'[Bandwidth throttling limit (e.g. 5M, 500K)]:rate:'
+        '--trim[Download video slice]:start: :end:'
+        '--loudnorm[EBU R128 audio loudness normalization]'
+        '--cookies-browser[Inject browser session cookies]:browser:(firefox chrome brave edge chromium opera vivaldi)'
+        '--sponsorblock[Automatically skip sponsor segments and intros]'
+        '--sub[Download and embed subtitle streams]:languages:(fr en es de ja pt it ru)'
+        '(-b --batch)'{-b,--batch}'[Download URLs from file list]:file:_files'
+        '(-o --output)'{-o,--output}'[Custom destination directory]:directory:_files -/'
+        '--organize[Auto-organize files by channel / artist folder]'
+        '--no-notify[Disable desktop completion notifications]'
+        '(-F --formats)'{-F,--formats}'[Inspect remote codecs and available streams]'
+        '(-n --dry-run)'{-n,--dry-run}'[Simulate execution without downloading]'
+        '--history[Display download ledger]'
+        'init[Install vget globally in PATH]'
+        '--init[Alias for init]'
+        '--check-deps[Run system engine diagnostics]'
+        '--update[Update vget and yt-dlp binaries]'
+        '(-h --help)'{-h,--help}'[Display help message]'
+        '(-V --version)'{-V,--version}'[Display vget version]'
+    )
+
+    _arguments -s $options "*:URL or search query:_urls"
+}
+
+_vget "$@"

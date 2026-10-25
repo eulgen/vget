@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "description": "Universal Media Hub CLI (VidMate for Terminal)",
+  "homepage": "https://github.com/eulgen/vget",
+  "license": "MIT",
+  "suggest": {
+    "git": "git",
+    "yt-dlp": "yt-dlp",
+    "ffmpeg": "ffmpeg",
+    "mpv": "mpv",
+    "fzf": "fzf",
+    "aria2": "aria2"
+  },
+  "url": "https://github.com/eulgen/vget/archive/refs/tags/v1.0.0.zip",
+  "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "extract_dir": "vget-1.0.0",
+  "bin": [
+    "vget.cmd",
+    "vget.ps1"
+  ],
+  "checkver": "github"
+}

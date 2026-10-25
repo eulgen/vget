@@ -1,0 +1,32 @@
+# ==============================================================================
+# vget - Fish Shell Completion Script
+# ==============================================================================
+
+complete -c vget -s v -l video -d "Download video stream" -r -a "1080p 720p 480p 360p 4k best"
+complete -c vget -s a -l audio -d "Extract audio track" -r -a "mp3 flac m4a wav"
+complete -c vget -s p -l play -d "Stream directly via mpv"
+complete -c vget -s s -l search -d "Query YouTube and web"
+complete -c vget -s c -l clipboard -d "Use URL from clipboard"
+complete -c vget -l gif -d "Create animated GIF"
+complete -c vget -s i -l interactive -d "Launch Telescope selector"
+complete -c vget -l fast -d "Aria2c 16 parallel sockets"
+complete -c vget -l aria2 -d "Alias for --fast"
+complete -c vget -l efficient -d "AV1/VP9 codecs (-40% data)"
+complete -c vget -l archive -d "Deduplication ledger"
+complete -c vget -s l -l limit-rate -d "Limit bandwidth (e.g. 5M)"
+complete -c vget -l trim -d "Download video snippet"
+complete -c vget -l loudnorm -d "Normalize audio (EBU R128)"
+complete -c vget -l cookies-browser -d "Inject browser cookies" -r -a "firefox chrome brave edge chromium opera vivaldi"
+complete -c vget -l sponsorblock -d "Remove sponsor segments"
+complete -c vget -l sub -d "Embed subtitles"
+complete -c vget -s b -l batch -d "Batch file of URLs" -r -F
+complete -c vget -s o -l output -d "Output directory" -r -a "(__fish_complete_directories)"
+complete -c vget -l organize -d "Organize by channel folder"
+complete -c vget -l no-notify -d "Disable notifications"
+complete -c vget -s F -l formats -d "Inspect available formats"
+complete -c vget -s n -l dry-run -d "Simulate download"
+complete -c vget -l history -d "Show download history"
+complete -c vget -l check-deps -d "Diagnose dependencies"
+complete -c vget -l update -d "Update vget and yt-dlp"
+complete -c vget -s h -l help -d "Show help"
+complete -c vget -s V -l version -d "Show version"

@@ -5,7 +5,7 @@ _vget_completions() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    opts="init --init -v --video -a --audio -p --play -s --search -i --interactive --trim --sponsorblock --sub -b --batch -l --limit-rate -o --output --organize -F --formats -n --dry-run --simulate --check-deps --update -h --help -V --version"
+    opts="init --init -v --video -a --audio -p --play -s --search -i --interactive -c --clipboard --gif --fast --aria2 --efficient --archive --loudnorm --cookies-browser --history --no-notify --trim --sponsorblock --sub -b --batch -l --limit-rate -o --output --organize -F --formats -n --dry-run --simulate --check-deps --update -h --help -V --version"
 
     case "$prev" in
         -v|--video)
@@ -18,6 +18,12 @@ _vget_completions() {
             local formats="mp3 flac m4a wav"
             # shellcheck disable=SC2207
             COMPREPLY=( $(compgen -W "$formats" -- "$cur") )
+            return 0
+            ;;
+        --cookies-browser)
+            local browsers="firefox chrome brave chromium vivaldi edge"
+            # shellcheck disable=SC2207
+            COMPREPLY=( $(compgen -W "$browsers" -- "$cur") )
             return 0
             ;;
         -b|--batch)
