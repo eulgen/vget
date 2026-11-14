@@ -1,0 +1,16 @@
+# ==============================================================================
+# ship - Journal de suivi des modifications en cours
+# Ce fichier est automatiquement vidé après chaque commit réussi.
+# ==============================================================================
+[SESSION INITIALISÉE] 2026-11-14 08:22:44
+------------------------------------------------------------
+[SNAPSHOT] 2026-11-14 08:22:44
+Modifications détectées :
+ M .gitignore
+ M lib/config.sh
+ M lib/downloader.sh
+ M lib/gif.sh
+ M tests/run_tests.sh
+?? .ship_changes.log
+?? AGENTS.md
+------------------------------------------------------------

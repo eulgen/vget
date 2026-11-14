@@ -1,3 +1,6 @@
 .vscode/
 .agents/
-AGENTS.md
+AGENTS.md.ship_changes.log
+.ghcli_changes.log
+.ship_watcher.pid
+.ghcli_watcher.pid

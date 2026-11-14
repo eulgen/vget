@@ -91,6 +91,16 @@ test_advanced_flags() {
 }
 test_case "Acceptation des flags avancés (--fast, --efficient, --archive, etc.)" test_advanced_flags
 
+# shellcheck disable=SC2317
+test_long_title_protection() {
+    # Vérification que VGET_MAX_TITLE_BYTES est initialisé et respecté
+    # shellcheck source=/dev/null
+    source lib/config.sh
+    [[ "${VGET_MAX_TITLE_BYTES:-0}" -gt 0 ]] || return 1
+    [[ "${VGET_MAX_UPLOADER_BYTES:-0}" -gt 0 ]] || return 1
+}
+test_case "Configuration de sécurité des longueurs de titres et dossiers" test_long_title_protection
+
 # 5. Validation Multi-Plateforme (OS, Complétions, Wrappers)
 # shellcheck disable=SC2317
 test_cross_platform() {

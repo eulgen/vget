@@ -23,9 +23,11 @@ generate_gif() {
 
     # Récupérer le titre
     local title
-    title=$(yt-dlp --print "%(title)s" "$url" 2>/dev/null || echo "vget_gif")
+    title=$(yt-dlp --print "%(title).100B" "$url" 2>/dev/null || echo "vget_gif")
     local safe_title
     safe_title="$(echo "$title" | tr -cd '[:alnum:] ._-' | tr ' ' '_')"
+    safe_title="${safe_title:0:100}"
+    [[ -z "$safe_title" ]] && safe_title="vget_gif_$(date +%s)"
     local output_gif="$dest_dir/${safe_title}.gif"
 
     local ytdl_args=("-f" "bestvideo[height<=720]+bestaudio/best" "--merge-output-format" "mp4" "-o" "$raw_video")

@@ -48,6 +48,10 @@ export VGET_FAST="${VGET_FAST:-false}"
 export VGET_EFFICIENT="${VGET_EFFICIENT:-false}"
 export VGET_USE_ARCHIVE="${VGET_USE_ARCHIVE:-false}"
 
+# Limites de sécurité des noms de fichiers (protection Errno 36 / NAME_MAX)
+export VGET_MAX_TITLE_BYTES="${VGET_MAX_TITLE_BYTES:-120}"
+export VGET_MAX_UPLOADER_BYTES="${VGET_MAX_UPLOADER_BYTES:-60}"
+
 # Initialise les répertoires nécessaires
 init_vget_dirs() {
     local target_dir="${1:-}"

@@ -54,6 +54,7 @@ execute_download() {
 
     local -a cmd=("yt-dlp" "--continue" "--retries" "5" "--fragment-retries" "10")
     cmd+=("--concurrent-fragments" "${VGET_CONCURRENT_FRAGMENTS:-5}")
+    cmd+=("--windows-filenames")
 
     # Accélération multi-connexions aria2c
     if [[ "${FAST:-false}" == "true" ]]; then
@@ -112,7 +113,13 @@ execute_download() {
         cmd+=("--simulate" "--print" "Titre: %(title)s | Résolution: %(resolution)s | Durée: %(duration_string)s")
     fi
 
-    [[ "$ORGANIZE" == "true" ]] && cmd+=("-o" "$dest_dir/%(uploader,channel|Inconnu)s/%(title)s.%(ext)s") || cmd+=("-o" "$dest_dir/%(title)s.%(ext)s")
+    local title_limit="${VGET_MAX_TITLE_BYTES:-120}"
+    local uploader_limit="${VGET_MAX_UPLOADER_BYTES:-60}"
+    if [[ "$ORGANIZE" == "true" ]]; then
+        cmd+=("-o" "$dest_dir/%(uploader,channel|Inconnu).${uploader_limit}B/%(title).${title_limit}B [%(id)s].%(ext)s")
+    else
+        cmd+=("-o" "$dest_dir/%(title).${title_limit}B [%(id)s].%(ext)s")
+    fi
 
     if [[ -n "${BATCH_FILE:-}" ]]; then
         [[ ! -f "$BATCH_FILE" ]] && { print_error "Fichier batch introuvable: $BATCH_FILE"; return 1; }
